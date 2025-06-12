@@ -172,16 +172,32 @@
       function openApp(activityId) {
         if (isMobile()) {
           // Use the correct deep link format that matches the app's configuration
-          window.location.href = `${APP_DEEPLINK}://activity/${activityId}`;
+          const deepLink = `${APP_DEEPLINK}://activity/${activityId}`;
+          
+          // Try to open the app
+          const now = new Date().valueOf();
+          
+          // Create an iframe to try opening the app (works better on iOS)
+          const iframe = document.createElement('iframe');
+          iframe.style.display = 'none';
+          iframe.style.width = '1px';
+          iframe.style.height = '1px';
+          iframe.src = deepLink;
+          document.body.appendChild(iframe);
+          
+          // Also try the traditional method
+          window.location.href = deepLink;
           
           // If app isn't installed, redirect to app store after a short delay
           setTimeout(function() {
-            if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-              window.location.href = APP_STORE_URL;
-            } else {
-              window.location.href = PLAY_STORE_URL;
+            if (new Date().valueOf() - now < 1600) { // If there wasn't a significant delay, app probably didn't open
+              if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+                window.location.href = APP_STORE_URL;
+              } else {
+                window.location.href = PLAY_STORE_URL;
+              }
             }
-          }, 1500); // Increased timeout to give more time for app to open
+          }, 1500);
         }
       }
 
