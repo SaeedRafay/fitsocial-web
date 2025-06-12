@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Redirecting...</title>
+  <script>
+    // Extract the path after the repository name
+    const path = window.location.pathname;
+    const repoName = '/fitsocial-web/';
+    const pathAfterRepo = path.substring(path.indexOf(repoName) + repoName.length);
+    
+    // If there's a path and it's not a file with an extension, treat it as an activity ID
+    if (pathAfterRepo && !pathAfterRepo.includes('.')) {
+      // Redirect to the index with the ID as a query parameter
+      window.location.href = window.location.origin + repoName + '?id=' + pathAfterRepo;
+    } else {
+      // Otherwise just go to the homepage
+      window.location.href = window.location.origin + repoName;
+    }
+  </script>
+</head>
+<body>
+  <p>Redirecting...</p>
+</body>
+</html> 
