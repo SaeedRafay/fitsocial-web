@@ -156,40 +156,7 @@
     
     <!-- Server-side rendering for meta tags -->
     <script>
-      // Check if we need to pre-render meta tags
-      const activityId = getActivityIdFromUrl();
-      
-      if (activityId) {
-        // Fetch activity data for meta tags
-        fetch(`https://fswwjsgbzypojuguuzmo.supabase.co/functions/v1/share-activity/${activityId}`)
-          .then(response => {
-            if (!response.ok) throw new Error('Activity not found');
-            return response.json();
-          })
-          .then(activity => {
-            // Update meta tags for SEO and social sharing
-            document.title = `${activity.title} - FitSocial`;
-            
-            // Update OpenGraph meta tags
-            document.querySelector('meta[property="og:title"]').setAttribute('content', activity.title);
-            document.querySelector('meta[property="og:description"]').setAttribute('content', activity.description);
-            document.querySelector('meta[property="og:url"]').setAttribute('content', window.location.href);
-            if (activity.photo_urls?.[0]) {
-              document.querySelector('meta[property="og:image"]').setAttribute('content', activity.photo_urls[0]);
-            }
-            
-            // Update Twitter Card meta tags
-            document.querySelector('meta[name="twitter:title"]').setAttribute('content', activity.title);
-            document.querySelector('meta[name="twitter:description"]').setAttribute('content', activity.description);
-            if (activity.photo_urls?.[0]) {
-              document.querySelector('meta[name="twitter:image"]').setAttribute('content', activity.photo_urls[0]);
-            }
-          })
-          .catch(error => {
-            console.error('Error loading activity for meta tags:', error);
-          });
-      }
-      
+      // Define helper function first
       function getActivityIdFromUrl() {
         // Check for activity ID in URL path
         const pathParts = window.location.pathname.split('/');
@@ -201,6 +168,43 @@
         const urlParams = new URLSearchParams(window.location.search);
         return urlParams.get('id');
       }
+
+      // Immediately-invoked function to update meta tags as early as possible
+      (function() {
+        // Check if we need to pre-render meta tags
+        const activityId = getActivityIdFromUrl();
+        
+        if (activityId) {
+          // Fetch activity data for meta tags
+          fetch(`https://fswwjsgbzypojuguuzmo.supabase.co/functions/v1/share-activity/${activityId}`)
+            .then(response => {
+              if (!response.ok) throw new Error('Activity not found');
+              return response.json();
+            })
+            .then(activity => {
+              // Update meta tags for SEO and social sharing
+              document.title = `${activity.title} - FitSocial`;
+              
+              // Update OpenGraph meta tags
+              document.querySelector('meta[property="og:title"]').setAttribute('content', activity.title);
+              document.querySelector('meta[property="og:description"]').setAttribute('content', activity.description);
+              document.querySelector('meta[property="og:url"]').setAttribute('content', window.location.href);
+              if (activity.photo_urls && activity.photo_urls.length > 0) {
+                document.querySelector('meta[property="og:image"]').setAttribute('content', activity.photo_urls[0]);
+              }
+              
+              // Update Twitter Card meta tags
+              document.querySelector('meta[name="twitter:title"]').setAttribute('content', activity.title);
+              document.querySelector('meta[name="twitter:description"]').setAttribute('content', activity.description);
+              if (activity.photo_urls && activity.photo_urls.length > 0) {
+                document.querySelector('meta[name="twitter:image"]').setAttribute('content', activity.photo_urls[0]);
+              }
+            })
+            .catch(error => {
+              console.error('Error loading activity for meta tags:', error);
+            });
+        }
+      })();
     </script>
   </head>
   <body>
@@ -251,6 +255,7 @@
         }
       }
 
+      // Function already defined in head section
       function getActivityIdFromUrl() {
         // Check for activity ID in URL path
         const pathParts = window.location.pathname.split('/');
@@ -319,21 +324,21 @@
           document.querySelector('meta[property="og:title"]').setAttribute('content', activity.title);
           document.querySelector('meta[property="og:description"]').setAttribute('content', activity.description);
           document.querySelector('meta[property="og:url"]').setAttribute('content', window.location.href);
-          if (activity.photo_urls?.[0]) {
+          if (activity.photo_urls && activity.photo_urls.length > 0) {
             document.querySelector('meta[property="og:image"]').setAttribute('content', activity.photo_urls[0]);
           }
           
           // Update Twitter Card meta tags
           document.querySelector('meta[name="twitter:title"]').setAttribute('content', activity.title);
           document.querySelector('meta[name="twitter:description"]').setAttribute('content', activity.description);
-          if (activity.photo_urls?.[0]) {
+          if (activity.photo_urls && activity.photo_urls.length > 0) {
             document.querySelector('meta[name="twitter:image"]').setAttribute('content', activity.photo_urls[0]);
           }
 
           // Render activity content
           document.getElementById('content').innerHTML = `
             <div class="card">
-              ${activity.photo_urls?.[0] ? `<img src="${activity.photo_urls[0]}" alt="${activity.title}" class="image" />` : ''}
+              ${activity.photo_urls && activity.photo_urls.length > 0 ? `<img src="${activity.photo_urls[0]}" alt="${activity.title}" class="image" />` : ''}
               <div class="content">
                 <h1>${activity.title}</h1>
                 <div class="meta">
