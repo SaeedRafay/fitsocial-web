@@ -141,17 +141,67 @@
       }
     </style>
     
-    <!-- OpenGraph Meta Tags (will be updated by JavaScript) -->
+    <!-- Default OpenGraph Meta Tags (will be updated by JavaScript or server-side) -->
     <meta property="og:title" content="FitSocial - Connect Through Fitness" />
     <meta property="og:description" content="Join fitness activities or create your own with FitSocial!" />
     <meta property="og:type" content="website" />
     <meta property="og:image" content="https://saeedrafay.github.io/fitsocial-web/app-preview.png" />
+    <meta property="og:url" content="https://saeedrafay.github.io/fitsocial-web/" />
     
-    <!-- Twitter Card Meta Tags -->
+    <!-- Default Twitter Card Meta Tags -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="FitSocial - Connect Through Fitness">
     <meta name="twitter:description" content="Join fitness activities or create your own with FitSocial!">
     <meta name="twitter:image" content="https://saeedrafay.github.io/fitsocial-web/app-preview.png">
+    
+    <!-- Server-side rendering for meta tags -->
+    <script>
+      // Check if we need to pre-render meta tags
+      const activityId = getActivityIdFromUrl();
+      
+      if (activityId) {
+        // Fetch activity data for meta tags
+        fetch(`https://fswwjsgbzypojuguuzmo.supabase.co/functions/v1/share-activity/${activityId}`)
+          .then(response => {
+            if (!response.ok) throw new Error('Activity not found');
+            return response.json();
+          })
+          .then(activity => {
+            // Update meta tags for SEO and social sharing
+            document.title = `${activity.title} - FitSocial`;
+            
+            // Update OpenGraph meta tags
+            document.querySelector('meta[property="og:title"]').setAttribute('content', activity.title);
+            document.querySelector('meta[property="og:description"]').setAttribute('content', activity.description);
+            document.querySelector('meta[property="og:url"]').setAttribute('content', window.location.href);
+            if (activity.photo_urls?.[0]) {
+              document.querySelector('meta[property="og:image"]').setAttribute('content', activity.photo_urls[0]);
+            }
+            
+            // Update Twitter Card meta tags
+            document.querySelector('meta[name="twitter:title"]').setAttribute('content', activity.title);
+            document.querySelector('meta[name="twitter:description"]').setAttribute('content', activity.description);
+            if (activity.photo_urls?.[0]) {
+              document.querySelector('meta[name="twitter:image"]').setAttribute('content', activity.photo_urls[0]);
+            }
+          })
+          .catch(error => {
+            console.error('Error loading activity for meta tags:', error);
+          });
+      }
+      
+      function getActivityIdFromUrl() {
+        // Check for activity ID in URL path
+        const pathParts = window.location.pathname.split('/');
+        if (pathParts.length > 1 && pathParts[pathParts.length - 1] !== '' && pathParts[pathParts.length - 1] !== 'index.html') {
+          return pathParts[pathParts.length - 1];
+        }
+        
+        // Check for activity ID in query parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get('id');
+      }
+    </script>
   </head>
   <body>
     <div class="container">
@@ -191,11 +241,11 @@
           // If app isn't installed, redirect to app store after a short delay
           setTimeout(function() {
             if (new Date().valueOf() - now < 1600) { // If there wasn't a significant delay, app probably didn't open
-              if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-                window.location.href = APP_STORE_URL;
-              } else {
-                window.location.href = PLAY_STORE_URL;
-              }
+            if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+              window.location.href = APP_STORE_URL;
+            } else {
+              window.location.href = PLAY_STORE_URL;
+            }
             }
           }, 1500);
         }
@@ -264,12 +314,20 @@
             day: 'numeric'
           });
 
-          // Update meta tags
+          // Update meta tags again to ensure they're set
           document.title = `${activity.title} - FitSocial`;
           document.querySelector('meta[property="og:title"]').setAttribute('content', activity.title);
           document.querySelector('meta[property="og:description"]').setAttribute('content', activity.description);
+          document.querySelector('meta[property="og:url"]').setAttribute('content', window.location.href);
           if (activity.photo_urls?.[0]) {
             document.querySelector('meta[property="og:image"]').setAttribute('content', activity.photo_urls[0]);
+          }
+          
+          // Update Twitter Card meta tags
+          document.querySelector('meta[name="twitter:title"]').setAttribute('content', activity.title);
+          document.querySelector('meta[name="twitter:description"]').setAttribute('content', activity.description);
+          if (activity.photo_urls?.[0]) {
+            document.querySelector('meta[name="twitter:image"]').setAttribute('content', activity.photo_urls[0]);
           }
 
           // Render activity content
